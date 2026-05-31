@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Delfa API - Easy-to-Use API Documentation Dashboard" />
+  <meta name="theme-color" content="#121212" />
+  <!-- The title will be overwritten by the config -->
+  <title>API Dashboard</title>
+
+  <!-- Preconnect & Preload fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+
+  <!-- Material Icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { 
+            sans: ['Inter', 'system-ui', 'sans-serif'] 
+          },
+          colors: { 
+            primary: {
+              50: '#f5f3ff',
+              100: '#ede9fe',
+              200: '#ddd6fe',
+              300: '#c4b5fd',
+              400: '#a78bfa',
+              500: '#8b5cf6',
+              600: '#7c3aed',
+              700: '#6d28d9',
+              800: '#5b21b6',
+              900: '#4c1d95',
+              950: '#2e1065',
+            },
+            surface: {
+              50: '#fafafa',
+              100: '#f4f4f5',
+              200: '#e4e4e7',
+              300: '#d4d4d8',
+              400: '#a1a1aa',
+              500: '#71717a',
+              600: '#52525b',
+              700: '#3f3f46',
+              800: '#27272a',
+              900: '#18181b',
+              950: '#09090b',
+            }
+          },
+          boxShadow: {
+            'elevation-1': '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+            'elevation-2': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            'elevation-3': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            'elevation-4': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            'elevation-5': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Base styles */
+    body { 
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      background-color: #121212;
+      color: #e4e4e7;
+    }
+    /* When sidebar is open, disable body scrolling */
+    body.sidebar-open {
+      overflow: hidden;
+    }
+
+    /* Focus styles for accessibility */
+    :focus-visible {
+      outline: 2px solid #7c3aed;
+      outline-offset: 2px;
+    }
+
+    /* Sidebar container */
+    #sidebar { 
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      width: 320px;
+    }
+
+    /* Sidebar content */
+    #sidebar-content { 
+      overflow-y: auto; 
+      flex-grow: 1;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(124, 58, 237, 0.3) rgba(0, 0, 0, 0.1);
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); }
+    ::-webkit-scrollbar-thumb { 
+      background-color: rgba(124, 58, 237, 0.3); 
+      border-radius: 4px; 
+    }
+    ::-webkit-scrollbar-thumb:hover { 
+      background-color: rgba(124, 58, 237, 0.5); 
+    }
+
+    /* Main content transition */
+    #main-content { 
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #7c3aed;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Material ripple effect */
+    .ripple {
+      position: relative;
+      overflow: hidden;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .ripple:after {
+      content: "";
+      display: block;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+      background-repeat: no-repeat;
+      background-position: 50%;
+      transform: scale(10, 10);
+      opacity: 0;
+      transition: transform .5s, opacity 1s;
+    }
+
+    .ripple:active:after {
+      transform: scale(0, 0);
+      opacity: .3;
+      transition: 0s;
+    }
+
+    /* Responsive sidebar */
+    @media (min-width: 1024px) {
+      #sidebar { transform: translateX(0) !important; }
+      #main-content { margin-left: 320px; }
+    }
+
+    @media (max-width: 1023px) {
+      #sidebar { transform: translateX(-100%); }
+      body.sidebar-open #sidebar { transform: translateX(0); }
+      body.sidebar-open #overlay { display: block; }
+    }
+
+    /* Animations */
+    .fade-in { animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .slide-in { animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* Card hover effect */
+    .card-hover {
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(124, 58, 237, 0.1), 0 4px 6px -2px rgba(124, 58, 237, 0.05);
+    }
+
+    /* Progress bar animation */
+    @keyframes progress {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+
+    .animate-progress {
+      animation: progress 2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Icon containers */
+    .icon-circle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1/1;
+      border-radius: 50%;
+    }
+
+    /* Reduced motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+      .animate-progress {
+        animation: none !important;
+      }
+      .fade-in, .slide-in {
+        animation: none !important;
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans flex bg-surface-950 text-surface-200 transition-colors duration-200">
+  <!-- Skip to main content link for accessibility -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:p-4 focus:bg-primary-700 focus:text-white focus:z-50">
+    Skip to main content
+  </a>
+
+  <!-- Global Loading Screen -->
+  <div id="loadingScreen" class="fixed inset-0 bg-surface-950 z-50 flex flex-col items-center justify-center transition-opacity duration-300" aria-live="polite" aria-busy="true">
+    <div class="relative w-64 h-3 bg-surface-800 rounded-full overflow-hidden mb-6">
+      <div id="loadingBar" class="absolute left-0 top-0 h-full w-0 bg-gradient-to-r from-primary-600 to-primary-400 rounded-full transition-all duration-1000"></div>
+    </div>
+    <p class="text-primary-400 text-xl font-medium mt-2">Loading dashboard...</p>
+  </div>
+
+  <!-- Overlay for mobile -->
+  <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden backdrop-blur-sm" aria-hidden="true"></div>
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed inset-y-0 left-0 bg-surface-900 z-30 border-r border-surface-800" aria-label="Sidebar navigation">
+    <div class="flex flex-col h-full">
+      <!-- Sidebar Header -->
+      <div class="h-16 min-h-16 flex-shrink-0 bg-surface-900 border-b border-surface-800 flex items-center justify-between px-4">
+        <div id="sidebarHeaderDefault" class="flex items-center w-full justify-between">
+          <h2 class="text-lg font-medium text-white">Delfa API</h2>
+          <button id="sidebarSearchIcon" class="icon-circle w-10 h-10 hover:bg-primary-700/20 rounded-full transition-colors ripple" aria-label="Search APIs">
+            <span class="material-icons-round text-primary-300" style="font-size: 20px;">search</span>
+          </button>
+        </div>
+        <div id="sidebarSearchBar" class="hidden w-full">
+          <div class="flex items-center w-full">
+            <div class="relative w-full">
+              <input type="text" id="api-search" placeholder="Search APIs..." 
+                     class="w-full p-2 pl-3 pr-8 rounded-md bg-surface-800 border border-primary-700/30 text-white placeholder-surface-400 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                     aria-label="Search APIs">
+              <button id="clearSearch" class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:text-primary-300 transition-colors" aria-label="Clear search">
+                <span class="material-icons-round" style="font-size: 18px;">close</span>
+              </button>
+            </div>
+            <button id="closeSearch" class="ml-2 px-3 py-2 hover:bg-primary-700/20 rounded-md transition-colors ripple" aria-label="Close search">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Content -->
+      <div id="sidebar-content" class="flex-grow overflow-y-auto p-4">
+        <div class="flex justify-center items-center h-32">
+          <div class="loading-spinner" aria-label="Loading API categories"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div id="main-content" class="flex-1 flex flex-col min-h-screen">
+    <!-- Main Header -->
+    <header class="h-16 min-h-16 flex-shrink-0 bg-surface-900 border-b border-surface-800 flex items-center px-4 transition-colors duration-200 sticky top-0 z-10">
+      <button id="menuButton" class="icon-circle w-10 h-10 hover:bg-primary-700/20 rounded-full lg:hidden transition-colors ripple" aria-label="Toggle menu" aria-expanded="false" aria-controls="sidebar">
+        <span class="material-icons-round text-surface-200" style="font-size: 24px;">menu</span>
+      </button>
+
+      <!-- The heading text will be updated from config -->
+      <h1 class="text-lg font-medium flex-1 text-center lg:text-left lg:ml-2 text-white">Dashboard</h1>
+
+      <!-- Notification Button -->
+      <div class="flex items-center">
+        <div class="relative">
+          <button id="notificationButton" class="icon-circle w-10 h-10 hover:bg-primary-700/20 rounded-full relative transition-colors ripple" aria-label="Notifications" aria-haspopup="true" aria-expanded="false" aria-controls="notificationPanel">
+            <span class="material-icons-round text-surface-300" style="font-size: 20px;">notifications</span>
+            <span id="notificationBadge" class="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold text-white bg-primary-600 rounded-full"></span>
+          </button>
+          <div id="notificationPanel" class="absolute right-0 mt-2 w-80 bg-surface-900 shadow-elevation-4 rounded-lg hidden z-40 fade-in border border-surface-800 overflow-hidden" role="menu" aria-labelledby="notificationButton"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Page Content -->
+    <main id="main" class="flex-grow overflow-y-auto">
+      <div class="max-w-7xl mx-auto px-4 py-6 space-y-4">
+        <!-- Welcome Card -->
+        <section class="bg-surface-900 rounded-lg p-6 space-y-4 shadow-elevation-3 border border-surface-800 fade-in slide-in" aria-labelledby="welcome-heading">
+          <div class="flex items-center space-x-3">
+            <div class="icon-circle w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center" aria-hidden="true">
+              <span class="material-icons-round text-white">api</span>
+            </div>
+            
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-4 mt-3">
+            <div class="space-y-3">
+              <div class="flex items-center space-x-2">
+                <span class="material-icons-round text-primary-400" aria-hidden="true">rocket_launch</span>
+                <h3 class="text-lg font-medium text-white">Getting Started</h3>
+              </div>
+              <ol class="list-decimal list-inside text-surface-300 space-y-1 ml-2">
+                <li class="flex items-start">
+                  <span class="mr-2">1.</span>
+                  <span>Select API category from sidebar</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="mr-2">2.</span>
+                  <span>Choose desired endpoint</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="mr-2">3.</span>
+                  <span>Review endpoint documentation</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="mr-2">4.</span>
+                  <span>Make GET request to endpoint URL</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="mr-2">5.</span>
+                  <span>Process JSON response</span>
+                </li>
+              </ol>
+            </div>
+
+            <div class="space-y-3">
+              <div class="flex items-center space-x-2">
+                <span class="material-icons-round text-primary-400" aria-hidden="true">gavel</span>
+                <h3 class="text-lg font-medium text-white">Terms of Service</h3>
+              </div>
+              <ol class="list-decimal list-inside text-surface-300 space-y-1 ml-2">
+                <li class="flex items-start">
+                  <span class="mr-2">1.</span>
+                  <span>Do not flood requests.</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="mr-2">2.</span>
+                  <span>The owner can change the terms of this API at any time to maintain API quality.</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="mr-2">3.</span>
+                  <span>Please don't attack it, it hurts.</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="mr-2">4.</span>
+                  <span>The owner is not responsible for what you do while using this website.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </section>
+
+        <!-- Stats Cards -->
+        <div class="grid gap-4 md:grid-cols-2 fade-in slide-in">
+          <div class="bg-surface-900 rounded-lg p-5 shadow-elevation-3 border border-surface-800 card-hover">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="icon-circle w-12 h-12 bg-primary-900/50 flex items-center justify-center" aria-hidden="true">
+                  <span class="material-icons-round text-primary-400" style="font-size: 28px;">dns</span>
+                </div>
+                <div>
+                  <h3 class="text-sm font-medium text-surface-400">Total Endpoints</h3>
+                  <p class="text-3xl font-bold text-white total-endpoints" aria-live="polite">
+                    <span class="loading-spinner mr-2"></span>
+                    <span class="sr-only">Loading endpoint count</span>
+                  </p>
+                </div>
+              </div>
+              <div class="hidden md:block">
+                <div class="icon-circle w-16 h-16 relative" aria-hidden="true">
+                  <svg viewBox="0 0 36 36" class="w-full h-full">
+                    <path class="stroke-surface-700" fill="none" stroke-width="3" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="100, 100"/>
+                    <path class="stroke-primary-500" fill="none" stroke-width="3" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="75, 100"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-surface-900 rounded-lg p-5 shadow-elevation-3 border border-surface-800 card-hover">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-3">
+                <div class="icon-circle w-12 h-12 bg-primary-900/50 flex items-center justify-center" aria-hidden="true">
+                  <span class="material-icons-round text-primary-400" style="font-size: 28px;">category</span>
+                </div>
+                <div>
+                  <h3 class="text-sm font-medium text-surface-400">Total Categories</h3>
+                  <p class="text-3xl font-bold text-white total-categories" aria-live="polite">
+                    <span class="loading-spinner mr-2"></span>
+                    <span class="sr-only">Loading category count</span>
+                  </p>
+                </div>
+              </div>
+              <div class="hidden md:block">
+                <div class="icon-circle w-16 h-16 relative" aria-hidden="true">
+                  <svg viewBox="0 0 36 36" class="w-full h-full">
+                    <path class="stroke-surface-700" fill="none" stroke-width="3" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="100, 100"/>
+                    <path class="stroke-primary-500" fill="none" stroke-width="3" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" stroke-dasharray="60, 100"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured APIs Section -->
+        <section class="bg-surface-900 rounded-lg p-5 shadow-elevation-3 border border-surface-800 fade-in slide-in" aria-labelledby="featured-apis-heading">
+          <div class="flex items-center space-x-2 mb-4">
+            <span class="material-icons-round text-primary-400" aria-hidden="true">star</span>
+            <h2 id="featured-apis-heading" class="text-xl font-medium text-white">Featured APIs</h2>
+          </div>
+
+          <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3" id="featuredApis" aria-live="polite">
+            <!-- Featured APIs will be populated dynamically -->
+            <div class="bg-surface-800 rounded-lg p-4 border border-surface-700 animate-pulse" aria-hidden="true">
+              <div class="h-6 bg-surface-700 rounded w-3/4 mb-3"></div>
+              <div class="h-4 bg-surface-700 rounded w-full mb-2"></div>
+              <div class="h-4 bg-surface-700 rounded w-5/6"></div>
+            </div>
+            <div class="bg-surface-800 rounded-lg p-4 border border-surface-700 animate-pulse" aria-hidden="true">
+              <div class="h-6 bg-surface-700 rounded w-3/4 mb-3"></div>
+              <div class="h-4 bg-surface-700 rounded w-full mb-2"></div>
+              <div class="h-4 bg-surface-700 rounded w-5/6"></div>
+            </div>
+            <div class="bg-surface-800 rounded-lg p-4 border border-surface-700 animate-pulse" aria-hidden="true">
+              <div class="h-6 bg-surface-700 rounded w-3/4 mb-3"></div>
+              <div class="h-4 bg-surface-700 rounded w-full mb-2"></div>
+              <div class="h-4 bg-surface-700 rounded w-5/6"></div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-surface-900 shadow-elevation-3 mt-auto border-t border-surface-800">
+      <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:justify-between items-center space-y-4 md:space-y-0">
+          <p class="text-sm text-surface-400">
+            &copy; <span id="current-year"></span> <span id="creator">AjiroDesu</span>
+          </p>
+          <div class="flex space-x-4">
+            <a href="#" class="text-surface-400 hover:text-primary-400 transition-colors text-sm">Documentation</a>
+            <a href="#" class="text-surface-400 hover:text-primary-400 transition-colors text-sm">GitHub</a>
+            <a href="#" class="text-surface-400 hover:text-primary-400 transition-colors text-sm">Contact</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- API Response Modal -->
+  <div id="apiResponseModal" class="fixed inset-0 z-50 bg-black bg-opacity-70 hidden overflow-y-auto backdrop-blur-sm" aria-labelledby="apiResponseModalLabel" aria-modal="true" role="dialog">
+    <div class="min-h-screen flex items-center justify-center p-4">
+      <div class="bg-surface-900 border border-surface-800 rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-elevation-5 fade-in slide-in">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-start p-6 border-b border-surface-800 bg-surface-800 rounded-t-xl">
+          <div>
+            <h3 class="text-xl font-medium text-white" id="apiResponseModalLabel"></h3>
+            <p class="text-surface-400 text-sm mt-1" id="apiResponseModalDesc"></p>
+          </div>
+          <button type="button" id="closeModalBtn" class="icon-circle w-10 h-10 text-surface-400 hover:text-white hover:bg-surface-700 transition-colors ripple rounded-full" aria-label="Close modal">
+            <span class="material-icons-round">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 overflow-y-auto flex-1">
+          <div class="bg-surface-800 rounded-lg p-4 border border-surface-700 mb-6" id="apiEndpointContainer">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-sm font-medium text-surface-300">Endpoint URL</h4>
+              <button id="copyEndpointBtn" class="text-primary-400 hover:text-primary-300 p-1 rounded-full hover:bg-primary-900/30 transition-colors text-xs flex items-center space-x-1 ripple" aria-label="Copy endpoint URL">
+                <span class="material-icons-round" style="font-size: 16px;">content_copy</span>
+                <span>Copy</span>
+              </button>
+            </div>
+            <pre id="apiEndpoint" class="text-primary-300 text-sm overflow-x-auto font-mono"></pre>
+          </div>
+
+          <div id="apiQueryInputContainer" class="space-y-4" aria-live="polite"></div>
+
+          <div id="apiResponseLoading" class="hidden py-12 flex justify-center" aria-live="polite" aria-busy="true">
+            <div class="relative w-12 h-12">
+              <div class="absolute inset-0 border-4 border-primary-600/30 border-t-primary-400 rounded-full animate-spin"></div>
+            </div>
+          </div>
+
+          <div id="apiResponseContainer" class="hidden mt-6" aria-live="polite">
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-sm font-medium text-surface-300">Response</h4>
+              <button id="copyResponseBtn" class="text-primary-400 hover:text-primary-300 p-1 rounded-full hover:bg-primary-900/30 transition-colors text-xs flex items-center space-x-1 ripple" aria-label="Copy response">
+                <span class="material-icons-round" style="font-size: 16px;">content_copy</span>
+                <span>Copy</span>
+              </button>
+            </div>
+            <pre id="apiResponseContent" class="bg-surface-800 rounded-lg p-4 text-surface-300 text-sm overflow-x-auto font-mono border border-surface-700"></pre>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-6 border-t border-surface-800 rounded-b-xl">
+          <button id="submitQueryBtn" class="hidden px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-all shadow-elevation-2 hover:shadow-elevation-3 flex items-center space-x-2 ripple" aria-live="polite">
+            <span class="material-icons-round" style="font-size: 18px;">send</span>
+            <span>Submit</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Ajiro API Dashboard */
+    class AjiroApiDashboard {
+      constructor() {
+        // Cache DOM elements and initialize state
+        this.apiCache = new Map();
+        this.sidebar = document.getElementById('sidebar');
+        this.mainContent = document.getElementById('main-content');
+        this.overlay = document.getElementById('overlay');
+        this.menuButton = document.getElementById('menuButton');
+        this.searchInput = document.getElementById('api-search');
+        this.notificationButton = document.getElementById('notificationButton');
+        this.notificationPanel = document.getElementById('notificationPanel');
+        this.isSidebarOpen = false;
+        this.isDesktop = window.innerWidth >= 1024;
+        this.apiEndpoint = '/api-list';
+
+        // Modal elements
+        this.apiResponseModal = document.getElementById('apiResponseModal');
+        this.closeModalBtn = document.getElementById('closeModalBtn');
+        this.apiResponseModalLabel = document.getElementById('apiResponseModalLabel');
+        this.apiResponseModalDesc = document.getElementById('apiResponseModalDesc');
+        this.apiEndpointEl = document.getElementById('apiEndpoint');
+        this.apiEndpointContainer = document.getElementById('apiEndpointContainer');
+        this.apiQueryInputContainer = document.getElementById('apiQueryInputContainer');
+        this.apiResponseLoading = document.getElementById('apiResponseLoading');
+        this.apiResponseContent = document.getElementById('apiResponseContent');
+        this.apiResponseContainer = document.getElementById('apiResponseContainer');
+        this.submitQueryBtn = document.getElementById('submitQueryBtn');
+        this.copyEndpointBtn = document.getElementById('copyEndpointBtn');
+        this.copyResponseBtn = document.getElementById('copyResponseBtn');
+
+        this.init();
+      }
+
+      init() {
+        this.animateLoading();
+        this.startDateTimeUpdate();
+        this.initSidebar();
+        this.initSearch();
+        this.initResizeHandler();
+        this.setupSidebarToggle();
+        this.setupNotificationButton();
+        this.setupSidebarSearch();
+        this.setupKeyboardNavigation();
+        this.setupModal();
+        this.setupCopyButtons();
+        this.initFeaturedApis();
+
+        document.addEventListener('click', this.handleOutsideClick.bind(this));
+
+        window.addEventListener('error', this.handleGlobalError.bind(this));
+        window.addEventListener('unhandledrejection', this.handlePromiseRejection.bind(this));
+      }
+
+      handleGlobalError(event) {
+        console.error('Global error:', event.message);
+        this.showErrorNotification('An error occurred. Please try again.');
+        return false;
+      }
+
+      handlePromiseRejection(event) {
+        console.error('Unhandled promise rejection:', event.reason);
+        if (event.reason.message && event.reason.message.includes('fetch')) {
+          this.showErrorNotification('Network error. Please check your connection.');
+        }
+        return false;
+      }
+
+      showErrorNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-red-900 text-white px-4 py-3 rounded-lg shadow-elevation-3 z-50 fade-in';
+        notification.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="material-icons-round">error</span>
+            <span>${message}</span>
+          </div>
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          setTimeout(() => notification.remove(), 300);
+        }, 5000);
+      }
+
+      animateLoading() {
+        const loadingBar = document.getElementById('loadingBar');
+        let width = 0;
+        const interval = setInterval(() => {
+          if (width >= 100) {
+            clearInterval(interval);
+            setTimeout(() => {
+              const loadingScreen = document.getElementById('loadingScreen');
+              loadingScreen.style.opacity = '0';
+              loadingScreen.setAttribute('aria-busy', 'false');
+              setTimeout(() => { 
+                loadingScreen.style.display = 'none';
+                this.announceToScreenReader('Dashboard loaded and ready');
+              }, 500);
+            }, 500);
+          } else {
+            width += 2;
+            loadingBar.style.width = width + '%';
+          }
+        }, 20);
+      }
+
+      announceToScreenReader(message) {
+        const announcer = document.createElement('div');
+        announcer.setAttribute('aria-live', 'assertive');
+        announcer.className = 'sr-only';
+        document.body.appendChild(announcer);
+
+        setTimeout(() => {
+          announcer.textContent = message;
+          setTimeout(() => announcer.remove(), 1000);
+        }, 100);
+      }
+
+      handleOutsideClick(e) {
+        if (this.notificationPanel && !this.notificationButton.contains(e.target) &&
+            !this.notificationPanel.contains(e.target)) {
+          this.notificationPanel.classList.add('hidden');
+          this.notificationButton.setAttribute('aria-expanded', 'false');
+        }
+      }
+
+      setupKeyboardNavigation() {
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            if (!this.notificationPanel.classList.contains('hidden')) {
+              this.notificationPanel.classList.add('hidden');
+              this.notificationButton.setAttribute('aria-expanded', 'false');
+              this.notificationButton.focus();
+            }
+            const searchBar = document.getElementById('sidebarSearchBar');
+            const defaultHeader = document.getElementById('sidebarHeaderDefault');
+            if (!searchBar.classList.contains('hidden') && !this.isDesktop) {
+              this.searchInput.value = "";
+              this.handleSearch({ target: { value: "" } });
+              searchBar.classList.add('hidden');
+              defaultHeader.classList.remove('hidden');
+              document.getElementById('sidebarSearchIcon').focus();
+            }
+            if (this.isSidebarOpen && !this.isDesktop) {
+              this.closeSidebar();
+              this.menuButton.focus();
+            }
+            if (!this.apiResponseModal.classList.contains('hidden')) {
+              this.closeModal();
+            }
+          }
+        });
+      }
+
+      startDateTimeUpdate() {
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+      }
+
+      async initSidebar() {
+        const sidebarContent = document.getElementById('sidebar-content');
+        const totalEndpointsElement = document.querySelector('.total-endpoints');
+        const totalCategoriesElement = document.querySelector('.total-categories');
+
+        try {
+          const apiList = await this.fetchApiList();
+          const categories = this.groupByCategory(apiList);
+
+          sidebarContent.innerHTML = '';
+          this.renderCategories(categories, sidebarContent);
+
+          totalEndpointsElement.innerHTML = apiList.length.toString();
+          totalCategoriesElement.innerHTML = Object.keys(categories).length.toString();
+
+          this.setupCategoryListeners();
+        } catch (error) {
+          console.error('Sidebar initialization error:', error);
+          sidebarContent.innerHTML = `
+            <div class="p-4 bg-primary-900/20 border border-primary-800 rounded-lg text-primary-300">
+              <p class="text-sm font-medium">Failed to load API categories</p>
+              <p class="text-xs mt-1">Please try refreshing the page</p>
+            </div>
+          `;
+          totalEndpointsElement.innerHTML = 'Error';
+          totalCategoriesElement.innerHTML = 'Error';
+        }
+      }
+
+      async initFeaturedApis() {
+        const featuredApisContainer = document.getElementById('featuredApis');
+
+        try {
+          const apiList = this.apiCache.get('apiList') || await this.fetchApiList();
+          const featuredApis = this.getRandomItems(apiList, 3);
+
+          featuredApisContainer.innerHTML = '';
+          featuredApis.forEach(api => {
+            const card = document.createElement('div');
+            card.className = 'bg-surface-800 rounded-lg p-4 border border-surface-700 hover:border-primary-700 transition-all card-hover cursor-pointer';
+            card.setAttribute('role', 'button');
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('aria-label', `Try ${this.capitalizeFirstLetter(api.name)} API`);
+            card.innerHTML = `
+              <div class="flex items-center space-x-2 mb-2">
+                <span class="material-icons-round text-primary-400" style="font-size: 18px;" aria-hidden="true">api</span>
+                <h3 class="font-medium text-white">${this.capitalizeFirstLetter(api.name)}</h3>
+              </div>
+              <p class="text-sm text-surface-300 mb-3">${api.description}</p>
+              <div class="flex justify-end">
+                <button class="text-xs bg-primary-700/30 hover:bg-primary-700/50 text-primary-300 px-3 py-1 rounded-md transition-colors flex items-center space-x-1 ripple">
+                  <span class="material-icons-round" style="font-size: 14px;" aria-hidden="true">open_in_new</span>
+                  <span>Try it</span>
+                </button>
+              </div>
+            `;
+            card.addEventListener('click', () => this.useApi(api.endpoint));
+            card.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.useApi(api.endpoint);
+              }
+            });
+            featuredApisContainer.appendChild(card);
+          });
+        } catch (error) {
+          console.error('Featured APIs initialization error:', error);
+          featuredApisContainer.innerHTML = `
+            <div class="col-span-full p-4 bg-primary-900/20 border border-primary-800 rounded-lg text-primary-300">
+              <p class="text-sm font-medium">Failed to load featured APIs</p>
+              <p class="text-xs mt-1">Please try refreshing the page</p>
+            </div>
+          `;
+        }
+      }
+
+      getRandomItems(array, count) {
+        const shuffled = [...array].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+      }
+
+      async fetchApiList() {
+        try {
+          const response = await fetch(this.apiEndpoint);
+          if (!response.ok) {
+            throw new Error(`Failed to fetch API list: ${response.status} ${response.statusText}`);
+          }
+          const apiList = await response.json();
+          this.apiCache.set('apiList', apiList);
+          return apiList;
+        } catch (error) {
+          console.error('Error fetching API list:', error);
+          throw error;
+        }
+      }
+
+      groupByCategory(apiList) {
+        return apiList.reduce((acc, api) => {
+          (acc[api.category] = acc[api.category] || []).push(api);
+          return acc;
+        }, {});
+      }
+
+      renderCategories(categories, container) {
+        if (Object.keys(categories).length === 0) {
+          container.innerHTML = `
+            <div class="p-4 bg-primary-900/20 border border-primary-800 rounded-lg text-primary-300">
+              <p class="text-sm font-medium">No API categories found</p>
+              <p class="text-xs mt-1">Please check back later</p>
+            </div>
+          `;
+          return;
+        }
+
+        Object.entries(categories)
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .forEach(([category, items]) => {
+            if (items.length > 0) {
+              container.appendChild(this.createCategory(category, items));
+            }
+          });
+      }
+
+      createCategory(category, items) {
+        const categoryContainer = document.createElement('div');
+        categoryContainer.className = 'category mb-4';
+
+        const headerId = `category-header-${category}`;
+        const header = document.createElement('button');
+        header.id = headerId;
+        header.className = 'category-header w-full text-left flex justify-between items-center p-3 hover:bg-primary-900/30 rounded-lg text-sm transition-colors ripple';
+        header.setAttribute('aria-expanded', 'false');
+        header.setAttribute('aria-controls', `category-${category}`);
+        header.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="material-icons-round text-primary-400" style="font-size: 18px;" aria-hidden="true">folder</span>
+            <span class="font-medium text-white">${this.capitalizeFirstLetter(category)}</span>
+          </div>
+          <span class="material-icons-round text-surface-400" style="font-size: 20px;" aria-hidden="true">expand_more</span>
+        `;
+
+        const content = document.createElement('div');
+        content.className = 'category-content pl-4 space-y-2 hidden mt-2';
+        content.id = `category-${category}`;
+        content.setAttribute('role', 'region');
+        content.setAttribute('aria-labelledby', headerId);
+
+        content.innerHTML = items
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(item => `
+            <div class="api-item p-3 hover:bg-primary-900/30 rounded-lg cursor-pointer transition-colors ripple" 
+                 onclick="dashboard.useApi('${item.endpoint}')"
+                 role="button"
+                 tabindex="0"
+                 aria-label="Use ${this.capitalizeFirstLetter(item.name)} API">
+              <div class="flex items-center space-x-2">
+                <span class="material-icons-round text-primary-300" style="font-size: 16px;" aria-hidden="true">api</span>
+                <span class="font-medium text-white text-sm">${this.capitalizeFirstLetter(item.name)}</span>
+              </div>
+              <div class="text-sm text-surface-400 mt-1 ml-6">${item.description}</div>
+            </div>
+          `).join('');
+
+        categoryContainer.appendChild(header);
+        categoryContainer.appendChild(content);
+
+        return categoryContainer;
+      }
+
+      setupCategoryListeners() {
+        document.querySelectorAll('.category-header').forEach(header => {
+          header.addEventListener('click', this.handleCategoryClick.bind(this));
+          header.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              this.handleCategoryClick(e);
+            }
+          });
+        });
+        document.querySelectorAll('.api-item').forEach(item => {
+          item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              item.click();
+            }
+          });
+        });
+      }
+
+      handleCategoryClick(e) {
+        e.stopPropagation();
+        const header = e.currentTarget;
+        const content = header.nextElementSibling;
+        const isExpanded = header.getAttribute('aria-expanded') === 'true';
+        header.setAttribute('aria-expanded', !isExpanded);
+
+        const icon = header.querySelector('.material-icons-round:last-child');
+        if (icon) {
+          icon.textContent = isExpanded ? 'expand_more' : 'expand_less';
+        }
+
+        if (isExpanded) {
+          content.classList.add('hidden');
+        } else {
+          content.classList.remove('hidden');
+        }
+      }
+
+      setupSidebarToggle() {
+        this.menuButton.addEventListener('click', () => this.toggleSidebar());
+        this.overlay.addEventListener('click', () => this.closeSidebar());
+      }
+
+      toggleSidebar() {
+        if (!this.isDesktop) {
+          this.isSidebarOpen = !this.isSidebarOpen;
+          this.updateSidebarState();
+          if (!this.isSidebarOpen) this.resetSidebarState();
+        }
+      }
+
+      closeSidebar() {
+        if (!this.isDesktop) {
+          this.isSidebarOpen = false;
+          this.updateSidebarState();
+          this.resetSidebarState();
+        }
+      }
+
+      updateSidebarState() {
+        if (!this.isDesktop) {
+          document.body.classList.toggle('sidebar-open', this.isSidebarOpen);
+          this.overlay.classList.toggle('hidden', !this.isSidebarOpen);
+          this.sidebar.style.transform = this.isSidebarOpen ? 'translateX(0)' : 'translateX(-100%)';
+          this.menuButton.setAttribute('aria-expanded', this.isSidebarOpen.toString());
+        }
+      }
+
+      resetSidebarState() {
+        this.searchInput.value = "";
+        this.handleSearch({ target: { value: "" } });
+        const searchBar = document.getElementById('sidebarSearchBar');
+        const defaultHeader = document.getElementById('sidebarHeaderDefault');
+        searchBar.classList.add('hidden');
+        defaultHeader.classList.remove('hidden');
+        document.querySelectorAll('.category').forEach(categoryContainer => {
+          const header = categoryContainer.querySelector('.category-header');
+          header.setAttribute('aria-expanded', 'false');
+          const content = categoryContainer.querySelector('.category-content');
+          content.classList.add('hidden');
+          categoryContainer.style.display = "";
+        });
+      }
+
+      initSearch() {
+        this.searchInput.addEventListener('input', this.handleSearch.bind(this));
+      }
+
+      handleSearch(event) {
+        const searchTerm = event.target.value.toLowerCase().trim();
+        const isSearchEmpty = searchTerm === '';
+        let hasResults = false;
+
+        document.querySelectorAll('.category').forEach(categoryContainer => {
+          const items = categoryContainer.querySelectorAll('.api-item');
+          let hasVisibleItems = false;
+          const content = categoryContainer.querySelector('.category-content');
+          const header = categoryContainer.querySelector('.category-header');
+          items.forEach(item => {
+            const nameEl = item.querySelector('.font-medium');
+            const descEl = item.querySelector('div:nth-child(2)');
+            const name = nameEl ? nameEl.textContent.toLowerCase() : '';
+            const description = descEl ? descEl.textContent.toLowerCase() : '';
+            const isMatch = name.includes(searchTerm) || description.includes(searchTerm);
+            item.style.display = isMatch ? '' : 'none';
+            if (isMatch) {
+              hasVisibleItems = true;
+              hasResults = true;
+            }
+          });
+
+          if (!isSearchEmpty && hasVisibleItems) {
+            header.setAttribute('aria-expanded', 'true');
+            content.classList.remove('hidden');
+            categoryContainer.style.display = '';
+          } else if (isSearchEmpty) {
+            header.setAttribute('aria-expanded', 'false');
+            content.classList.add('hidden');
+            categoryContainer.style.display = '';
+          } else {
+            categoryContainer.style.display = 'none';
+          }
+        });
+
+        let noResultsMsg = document.getElementById('no-search-results');
+        if (!hasResults && !isSearchEmpty) {
+          if (!noResultsMsg) {
+            noResultsMsg = document.createElement('div');
+            noResultsMsg.id = 'no-search-results';
+            noResultsMsg.className = 'p-4 text-center text-primary-300 mt-4';
+            noResultsMsg.setAttribute('role', 'status');
+            noResultsMsg.innerHTML = `
+              <div class="flex flex-col items-center">
+                <span class="material-icons-round text-primary-400 mb-2" style="font-size: 24px;" aria-hidden="true">search_off</span>
+                <p>No results found for "${searchTerm}"</p>
+              </div>
+            `;
+            document.getElementById('sidebar-content').appendChild(noResultsMsg);
+          } else {
+            noResultsMsg.innerHTML = `
+              <div class="flex flex-col items-center">
+                <span class="material-icons-round text-primary-400 mb-2" style="font-size: 24px;" aria-hidden="true">search_off</span>
+                <p>No results found for "${searchTerm}"</p>
+              </div>
+            `;
+            noResultsMsg.style.display = '';
+          }
+        } else if (noResultsMsg) {
+          noResultsMsg.style.display = 'none';
+        }
+      }
+
+      initResizeHandler() {
+        window.addEventListener('resize', () => {
+          const wasDesktop = this.isDesktop;
+          this.isDesktop = window.innerWidth >= 1024;
+          if (wasDesktop !== this.isDesktop) { this.updateSidebarState(); }
+        });
+      }
+
+      setupNotificationButton() {
+        if (this.notificationButton) {
+          this.notificationButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleNotificationPanel();
+          });
+        }
+      }
+
+      toggleNotificationPanel() {
+        if (this.notificationPanel) {
+          const isVisible = !this.notificationPanel.classList.contains('hidden');
+          this.notificationPanel.classList.toggle('hidden');
+          this.notificationButton.setAttribute('aria-expanded', (!isVisible).toString());
+        }
+      }
+
+      setupSidebarSearch() {
+        const searchIcon = document.getElementById('sidebarSearchIcon');
+        const searchBar = document.getElementById('sidebarSearchBar');
+        const closeSearch = document.getElementById('closeSearch');
+        const clearSearch = document.getElementById('clearSearch');
+        const defaultHeader = document.getElementById('sidebarHeaderDefault');
+
+        searchIcon.addEventListener('click', () => {
+          defaultHeader.classList.add('hidden');
+          searchBar.classList.remove('hidden');
+          this.searchInput.focus();
+        });
+
+        closeSearch.addEventListener('click', () => {
+          this.searchInput.value = "";
+          this.handleSearch({ target: { value: "" } });
+          searchBar.classList.add('hidden');
+          defaultHeader.classList.remove('hidden');
+          searchIcon.focus();
+        });
+
+        clearSearch.addEventListener('click', () => {
+          this.searchInput.value = "";
+          this.handleSearch({ target: { value: "" } });
+          this.searchInput.focus();
+        });
+      }
+
+      setupCopyButtons() {
+        this.copyEndpointBtn.addEventListener('click', () => {
+          const text = this.apiEndpointEl.textContent;
+          navigator.clipboard.writeText(text).then(() => {
+            this.showCopyFeedback(this.copyEndpointBtn);
+          }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            this.showErrorNotification('Failed to copy to clipboard');
+          });
+        });
+
+        this.copyResponseBtn.addEventListener('click', () => {
+          const text = this.apiResponseContent.textContent;
+          navigator.clipboard.writeText(text).then(() => {
+            this.showCopyFeedback(this.copyResponseBtn);
+          }).catch(err => {
+            console.error('Failed to copy text: ', err);
+            this.showErrorNotification('Failed to copy to clipboard');
+          });
+        });
+      }
+
+      showCopyFeedback(button) {
+        const originalText = button.innerHTML;
+        button.innerHTML = `
+          <span class="material-icons-round" style="font-size: 16px;" aria-hidden="true">check</span>
+          <span>Copied!</span>
+        `;
+        button.setAttribute('aria-label', 'Copied successfully');
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.setAttribute('aria-label', button.id === 'copyEndpointBtn' ? 'Copy endpoint URL' : 'Copy response');
+        }, 2000);
+      }
+
+      capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+
+      useApi(endpoint) {
+        const apiList = this.apiCache.get('apiList') || [];
+        const api = apiList.find(item => item.endpoint === endpoint);
+        if (api) {
+          this.openApiModal(api);
+        } else {
+          window.open(endpoint, '_blank', 'noopener,noreferrer');
+        }
+      }
+
+      openApiModal(api) {
+        // Reset modal content
+        this.apiResponseModalLabel.textContent = this.capitalizeFirstLetter(api.name);
+        this.apiResponseModalDesc.textContent = api.description || '';
+        this.apiQueryInputContainer.innerHTML = '';
+        this.apiResponseContent.innerHTML = '';
+        this.apiResponseContainer.classList.add('hidden');
+        this.apiEndpointContainer.classList.add('hidden');
+        this.submitQueryBtn.classList.add('hidden');
+        this.apiResponseLoading.classList.add('hidden');
+
+        const originalEndpoint = api.endpoint;
+        // Split into base (path) and query string parts
+        const [baseUrlPart, queryString] = originalEndpoint.split('?');
+        // Detect dynamic path parameters (e.g. ":id")
+        const pathParamMatches = baseUrlPart.match(/:\w+/g) || [];
+        // Parse existing query parameters (if any)
+        const queryParams = new URLSearchParams(queryString || '');
+
+        const hasPathParams = pathParamMatches.length > 0;
+        const hasQueryParams = queryParams.toString().length > 0;
+
+        if (hasPathParams || hasQueryParams) {
+          // --- Handle dynamic (path) parameters ---
+          if (hasPathParams) {
+            const pathParamContainer = document.createElement('div');
+            pathParamContainer.className = 'space-y-4';
+            const pathTitle = document.createElement('h4');
+            pathTitle.className = 'text-sm font-medium text-surface-300 mb-3';
+            pathTitle.textContent = 'Path Parameters';
+            pathParamContainer.appendChild(pathTitle);
+
+            pathParamMatches.forEach(param => {
+              const paramName = param.slice(1);
+              const inputGroup = document.createElement('div');
+              inputGroup.className = 'flex flex-col';
+
+              const label = document.createElement('label');
+              label.htmlFor = `path-param-${paramName}`;
+              label.className = 'text-surface-300 mb-1 text-sm';
+              label.textContent = this.capitalizeFirstLetter(paramName);
+
+              const inputField = document.createElement('input');
+              inputField.type = 'text';
+              inputField.id = `path-param-${paramName}`;
+              inputField.className = 'bg-surface-800 border border-surface-700 text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm';
+              inputField.placeholder = `Enter ${paramName}...`;
+              inputField.dataset.paramType = 'path';
+              inputField.dataset.param = paramName;
+              inputField.required = true;
+              inputField.addEventListener('input', () => {
+                if (!inputField.value.trim()) {
+                  inputField.classList.add('border-red-500');
+                } else {
+                  inputField.classList.remove('border-red-500');
+                }
+                this.validateInputs();
+              });
+
+              inputGroup.appendChild(label);
+              inputGroup.appendChild(inputField);
+              pathParamContainer.appendChild(inputGroup);
+            });
+            this.apiQueryInputContainer.appendChild(pathParamContainer);
+          }
+
+          // --- Handle query string parameters ---
+          if (hasQueryParams) {
+            const queryParamContainer = document.createElement('div');
+            queryParamContainer.className = 'space-y-4 mt-4';
+            const queryTitle = document.createElement('h4');
+            queryTitle.className = 'text-sm font-medium text-surface-300 mb-3';
+            queryTitle.textContent = 'Query Parameters';
+            queryParamContainer.appendChild(queryTitle);
+
+            for (const [key, value] of queryParams.entries()) {
+              const inputGroup = document.createElement('div');
+              inputGroup.className = 'flex flex-col';
+
+              const label = document.createElement('label');
+              label.htmlFor = `query-param-${key}`;
+              label.className = 'text-surface-300 mb-1 text-sm';
+              label.textContent = this.capitalizeFirstLetter(key);
+
+              const inputField = document.createElement('input');
+              inputField.type = 'text';
+              inputField.id = `query-param-${key}`;
+              inputField.className = 'bg-surface-800 border border-surface-700 text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-sm';
+              inputField.placeholder = `Enter ${key}...`;
+              inputField.dataset.paramType = 'query';
+              inputField.dataset.param = key;
+              inputField.value = value;
+              inputField.required = true;
+              inputField.addEventListener('input', () => {
+                if (!inputField.value.trim()) {
+                  inputField.classList.add('border-red-500');
+                } else {
+                  inputField.classList.remove('border-red-500');
+                }
+                this.validateInputs();
+              });
+
+              inputGroup.appendChild(label);
+              inputGroup.appendChild(inputField);
+              queryParamContainer.appendChild(inputGroup);
+            }
+            this.apiQueryInputContainer.appendChild(queryParamContainer);
+          }
+
+          this.submitQueryBtn.classList.remove('hidden');
+          this.submitQueryBtn.disabled = true;
+          this.submitQueryBtn.onclick = async () => {
+            const inputs = this.apiQueryInputContainer.querySelectorAll('input');
+            let isValid = true;
+            const pathData = {};
+            const queryData = {};
+            inputs.forEach(input => {
+              if (!input.value.trim()) {
+                isValid = false;
+                input.classList.add('border-red-500');
+              } else {
+                input.classList.remove('border-red-500');
+                if (input.dataset.paramType === 'path') {
+                  pathData[input.dataset.param] = input.value.trim();
+                } else if (input.dataset.paramType === 'query') {
+                  queryData[input.dataset.param] = input.value.trim();
+                }
+              }
+            });
+            if (!isValid) return;
+
+            let finalBaseUrl = baseUrlPart;
+            for (const [key, value] of Object.entries(pathData)) {
+              finalBaseUrl = finalBaseUrl.replace(`:${key}`, encodeURIComponent(value));
+            }
+            const newQueryParams = new URLSearchParams(queryData).toString();
+            let finalUrl = finalBaseUrl;
+            if (newQueryParams) {
+              finalUrl += `?${newQueryParams}`;
+            }
+            this.apiQueryInputContainer.innerHTML = '';
+            this.submitQueryBtn.classList.add('hidden');
+            this.handleApiRequest(finalUrl, 'get');
+          };
+          this.validateInputs();
+        } else {
+          this.handleApiRequest(api.endpoint, 'get');
+        }
+
+        this.apiResponseModal.classList.remove('hidden');
+        setTimeout(() => this.closeModalBtn.focus(), 100);
+      }
+
+      validateInputs() {
+        const inputs = this.apiQueryInputContainer.querySelectorAll('input');
+        const isValid = Array.from(inputs).every(input => input.value.trim() !== '');
+        this.submitQueryBtn.disabled = !isValid;
+        if (isValid) {
+          this.submitQueryBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+          this.submitQueryBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+      }
+
+      async handleApiRequest(apiUrl, method = 'get', bodyData = null) {
+        this.apiResponseLoading.classList.remove('hidden');
+        this.apiResponseContainer.classList.add('hidden');
+        this.apiEndpointContainer.classList.remove('hidden');
+        const fullUrl = apiUrl.startsWith('http') ? apiUrl : window.location.origin + apiUrl;
+        this.apiEndpointEl.textContent = fullUrl;
+
+        try {
+          const options = {
+            method: method.toUpperCase(),
+            headers: {}
+          };
+
+          if (method === 'post' && bodyData) {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(bodyData);
+          }
+
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000);
+          options.signal = controller.signal;
+
+          const response = await fetch(apiUrl, options);
+          clearTimeout(timeoutId);
+
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+          const contentType = response.headers.get('Content-Type');
+          if (contentType && contentType.startsWith('image/')) {
+            const blob = await response.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = 'API response image';
+            img.className = 'max-w-full h-auto rounded-lg';
+            this.apiResponseContent.innerHTML = '';
+            this.apiResponseContent.appendChild(img);
+          } else {
+            const data = await response.json();
+            const formattedJson = JSON.stringify(data, null, 2);
+            this.apiResponseContent.textContent = formattedJson;
+            this.apiResponseContent.innerHTML = this.syntaxHighlight(formattedJson);
+          }
+          this.announceToScreenReader('API response received');
+        } catch (error) {
+          console.error('API request error:', error);
+          this.apiResponseContent.textContent = `Error: ${error.message}`;
+          this.apiResponseContent.classList.add('text-red-400');
+          this.announceToScreenReader(`API request failed: ${error.message}`);
+        } finally {
+          this.apiResponseLoading.classList.add('hidden');
+          this.apiResponseContainer.classList.remove('hidden');
+        }
+      }
+
+      syntaxHighlight(json) {
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+          let cls = 'text-primary-300';
+          if (/^"/.test(match)) {
+            cls = /:$/.test(match) ? 'text-primary-200' : 'text-green-300';
+          } else if (/true|false/.test(match)) {
+            cls = 'text-blue-300';
+          } else if (/null/.test(match)) {
+            cls = 'text-red-300';
+          }
+          return '<span class="' + cls + '">' + match + '</span>';
+        });
+      }
+
+      setupModal() {
+        this.closeModalBtn.addEventListener('click', () => this.closeModal());
+        this.apiResponseModal.addEventListener('click', (e) => {
+          if (e.target === this.apiResponseModal) {
+            this.closeModal();
+          }
+        });
+
+        this.apiResponseModal.addEventListener('keydown', (e) => {
+          if (e.key === 'Tab') {
+            const focusableElements = this.apiResponseModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            if (e.shiftKey && document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement.focus();
+            } else if (!e.shiftKey && document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement.focus();
+            }
+          }
+        });
+      }
+
+      closeModal() {
+        this.apiResponseModal.classList.add('hidden');
+        const activeElement = document.activeElement;
+        if (activeElement && activeElement.classList.contains('api-item')) {
+          activeElement.focus();
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      window.dashboard = new AjiroApiDashboard();
+
+      fetch('/config')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(config => {
+          document.title = config.name;
+          const sidebarHeader = document.querySelector('#sidebarHeaderDefault h2');
+          if (sidebarHeader) {
+            sidebarHeader.textContent = config.name;
+          }
+          const mainHeader = document.querySelector('header h1');
+          if (mainHeader) {
+            mainHeader.textContent = config.version;
+          }
+          const creatorSpan = document.getElementById('creator');
+          if (creatorSpan) {
+            creatorSpan.textContent = config.apiSettings.creator;
+          }
+          const notificationPanel = document.getElementById('notificationPanel');
+          let notificationsHtml = `
+            <div class="p-3 bg-surface-800 border-b border-surface-700">
+              <h3 class="text-sm font-medium text-white">Notifications</h3>
+            </div>
+          `;
+
+          if (config.notifications && config.notifications.length > 0) {
+            config.notifications.forEach((notification, index) => {
+              notificationsHtml += `
+                <div data-index="${index}" class="p-3 border-b border-surface-700 notification-item cursor-pointer hover:bg-surface-800 transition-colors" 
+                     role="menuitem" 
+                     tabindex="0">
+                  <div class="flex items-start">
+                    <span class="material-icons-round text-primary-400 mr-2 mt-0.5" style="font-size: 16px;" aria-hidden="true">circle_notifications</span>
+                    <div>
+                      <h4 class="text-sm font-medium text-white">${notification.title}</h4>
+                      <p class="text-xs text-surface-300 mt-1">${notification.message}</p>
+                    </div>
+                  </div>
+                </div>
+              `;
+            });
+          } else {
+            notificationsHtml += `
+              <div class="p-4 text-center text-surface-400" role="menuitem">
+                <span class="material-icons-round mb-2 text-surface-500" style="font-size: 24px;" aria-hidden="true">notifications_off</span>
+                <p class="text-sm">No notifications</p>
+              </div>
+            `;
+          }
+
+          notificationPanel.innerHTML = notificationsHtml;
+
+          const readNotifications = JSON.parse(localStorage.getItem("readNotifications") || "[]");
+          document.querySelectorAll('.notification-item').forEach(item => {
+            const idx = item.getAttribute('data-index');
+            if (readNotifications.includes(idx)) {
+              item.classList.add('opacity-60');
+            }
+            item.addEventListener('keydown', (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                item.click();
+              }
+            });
+          });
+
+          const notificationBadge = document.getElementById('notificationBadge');
+          function updateNotificationBadge() {
+            const items = document.querySelectorAll('.notification-item');
+            let unreadCount = 0;
+            items.forEach(item => {
+              if (!item.classList.contains('opacity-60')) unreadCount++;
+            });
+            if (notificationBadge) {
+              if (unreadCount > 0) {
+                notificationBadge.textContent = unreadCount;
+                notificationBadge.classList.remove('hidden');
+                document.getElementById('notificationButton').setAttribute('aria-label', `Notifications (${unreadCount} unread)`);
+              } else {
+                notificationBadge.classList.add('hidden');
+                document.getElementById('notificationButton').setAttribute('aria-label', 'Notifications');
+              }
+            }
+          }
+          updateNotificationBadge();
+
+          document.querySelectorAll('.notification-item').forEach(item => {
+            item.addEventListener('click', function() {
+              const idx = item.getAttribute('data-index');
+              if (!item.classList.contains('opacity-60')) {
+                item.classList.add('opacity-60');
+                let read = JSON.parse(localStorage.getItem("readNotifications") || "[]");
+                if (!read.includes(idx)) {
+                  read.push(idx);
+                  localStorage.setItem("readNotifications", JSON.stringify(read));
+                }
+              }
+              updateNotificationBadge();
+            });
+          });
+        })
+        .catch(err => {
+          console.error('Failed to load config:', err);
+          const dashboard = window.dashboard;
+          if (dashboard && dashboard.showErrorNotification) {
+            dashboard.showErrorNotification('Failed to load configuration');
+          }
+        });
+    });
+  </script>
+</body>
+</html>
