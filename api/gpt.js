@@ -3,7 +3,7 @@ const axios = require('axios');
 exports.config = {
     name: "gpt",
     version: "1.0.0",
-    author: "Delfa frost ",
+    author: "chris st ",
     description: "Generate responses based on user input using GPT AI.",
     method: 'get',
     link: [`/gpt?q=`],
