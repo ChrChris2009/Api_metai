@@ -4,7 +4,7 @@ const path = __dirname + "/tmp/art.png";
 
 exports.config = {
   name: 'art',
-  author: 'Delfa frost ',
+  author: 'chris st ',
   description: 'Generates AI art based on a text prompt',
   method: 'get',
   category: 'image generation',
