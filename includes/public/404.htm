@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Page Not Found 404</title>
+    <meta name="description" content="404 - Page Not Found">
+    <link rel="shortcut icon" href="https://telegra.ph/file/278f19dd99ebc79c85140.png"/>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap" rel="stylesheet">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            font-family: Ubuntu, sans-serif;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #1a1a1a;
+            background-image: url("https://telegra.ph/file/12f2ba20b65f5ef87f69f.png");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+        }
+        .text {
+            text-align: center;
+        }
+        .status, .readdocs {
+            animation: fadeIn 0.8s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        p {
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.15em;
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        a {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.5);
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: rgba(255, 255, 255, 1);
+        }
+        .typed-text {
+            color: #ff4136;
+        }
+        .cursor {
+            display: inline-block;
+            width: 3px;
+            background-color: #fff;
+            margin-left: 0.1rem;
+            animation: blink 0.7s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        hr {
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.5);
+            width: 80%;
+            height: 2px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="text">
+        <div class="status">
+            <p><span class="typed-text"></span><span class="cursor">&nbsp;</span></p>
+        </div>
+        <hr>
+        <div class="readdocs">
+            <p>Go back to <a href="/" class="docs">Docs.</a></p>
+        </div>
+    </div>
+    <script>
+        const typedTextSpan = document.querySelector(".typed-text");
+        const cursorSpan = document.querySelector(".cursor");
+        const textArray = ["Page Not Found", "Error 404"];
+        const typingDelay = 200;
+        const erasingDelay = 100;
+        const newTextDelay = 2000;
+        let textArrayIndex = 0;
+        let charIndex = 0;
+
+        function type() {
+            if (charIndex < textArray[textArrayIndex].length) {
+                if(!cursorSpan.classList.contains("typing")) cursorSpan.classList.add("typing");
+                typedTextSpan.textContent += textArray[textArrayIndex].charAt(charIndex);
+                charIndex++;
+                setTimeout(type, typingDelay);
+            } 
+            else {
+                cursorSpan.classList.remove("typing");
+                setTimeout(erase, newTextDelay);
+            }
+        }
+
+        function erase() {
+            if (charIndex > 0) {
+                if(!cursorSpan.classList.contains("typing")) cursorSpan.classList.add("typing");
+                typedTextSpan.textContent = textArray[textArrayIndex].substring(0, charIndex-1);
+                charIndex--;
+                setTimeout(erase, erasingDelay);
+            } 
+            else {
+                cursorSpan.classList.remove("typing");
+                textArrayIndex++;
+                if(textArrayIndex>=textArray.length) textArrayIndex=0;
+                setTimeout(type, typingDelay + 1100);
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            if(textArray.length) setTimeout(type, newTextDelay + 250);
+        });
+    </script>
+</body>
+                                                                            </html>
