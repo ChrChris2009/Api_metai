@@ -1,5 +1,5 @@
 {
-  "name": "Delfa api 2.0",
+  "name": "chris st api 2.0",
   "version": "1.0.0",
   "description": "A simple lightweight REST API by Delfa frost ",
   "main": "index.js",
@@ -11,7 +11,7 @@
     "url": ""
   },
   "keywords": [],
-  "author": "Delfa frost",
+  "author": "chris st",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.6.8",
