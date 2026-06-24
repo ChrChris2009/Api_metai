@@ -65,7 +65,7 @@ Here's an example of a simple "Hello World" API:
 ```javascript  
 exports.config = {  
     name: 'helloWorld',  
-    author: 'Delfa frost',  
+    author: 'chris st',  
     description: 'Returns a Hello World message',  
     category: 'example',  
     link: ['/helloWorld']  
