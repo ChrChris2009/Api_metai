@@ -6,16 +6,12 @@
     "status": "Online!"
   },
   "apiSettings": {
-    "creator": "chris st"
+    "creator": "Delfa frost"
   },
   "notifications": [
     {
       "title": "Welcome to API Dashboard",
       "message": "Explore our APIs and integrate them into your projects."
-    },
-    {
-      "title": "contact",
-      "message": "Contact the administrator, Chris St, for assistance if you have a problem."
     },
     {
       "title": "New Feature",
