@@ -1,9 +1,9 @@
-// art.js
+// pollinations.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "pollinations",
+    desc: "Generate AI image using Pollinations API",
     method: "get",
     category: "Image",
     operator: "Christus",
@@ -11,9 +11,9 @@ const meta = {
 
 async function onStart({ req, res }) {
     try {
-        const prompt = req.query.prompt || "A cat";
+        const prompt = req.query.prompt || "Dog";
 
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
+        const apiUrl = `https://zetbot-page.onrender.com/api/pollinations.ai?prompt=${encodeURIComponent(
             prompt
         )}`;
 

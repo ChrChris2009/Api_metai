@@ -1,9 +1,9 @@
-// art.js
+// fluxpro.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "fluxpro",
+    desc: "Generate AI image using FluxPro API",
     method: "get",
     category: "Image",
     operator: "Christus",
@@ -11,9 +11,9 @@ const meta = {
 
 async function onStart({ req, res }) {
     try {
-        const prompt = req.query.prompt || "A cat";
+        const prompt = req.query.prompt || "cat in space";
 
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
+        const apiUrl = `https://uniapis.onrender.com/api/fluxpro?prompt=${encodeURIComponent(
             prompt
         )}`;
 

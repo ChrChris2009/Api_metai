@@ -1,9 +1,9 @@
-// art.js
+// pollinations3.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "pollinations3",
+    desc: "Generate AI image using Pollinations API with model option",
     method: "get",
     category: "Image",
     operator: "Christus",
@@ -11,11 +11,12 @@ const meta = {
 
 async function onStart({ req, res }) {
     try {
-        const prompt = req.query.prompt || "A cat";
+        const prompt = req.query.prompt || "cat";
+        const model = req.query.model || "1";
 
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
+        const apiUrl = `https://uniapis.onrender.com/api/pollinations?prompt=${encodeURIComponent(
             prompt
-        )}`;
+        )}&model=${encodeURIComponent(model)}`;
 
         const response = await axios.get(apiUrl, {
             responseType: "arraybuffer",

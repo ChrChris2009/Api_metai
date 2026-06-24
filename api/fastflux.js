@@ -1,9 +1,9 @@
-// art.js
+// fastflux.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "fastflux",
+    desc: "Generate AI image using FastFlux API",
     method: "get",
     category: "Image",
     operator: "Christus",
@@ -11,10 +11,10 @@ const meta = {
 
 async function onStart({ req, res }) {
     try {
-        const prompt = req.query.prompt || "A cat";
+        const text = req.query.text || "A cat";
 
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
-            prompt
+        const apiUrl = `http://65.109.80.126:20511/api/fastfluximg?text=${encodeURIComponent(
+            text
         )}`;
 
         const response = await axios.get(apiUrl, {

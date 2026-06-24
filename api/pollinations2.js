@@ -1,9 +1,9 @@
-// art.js
+// pollinations2.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "pollinations2",
+    desc: "Generate AI image using Pollinations API",
     method: "get",
     category: "Image",
     operator: "Christus",
@@ -13,9 +13,9 @@ async function onStart({ req, res }) {
     try {
         const prompt = req.query.prompt || "A cat";
 
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
+        const apiUrl = `https://rapido.zetsu.xyz/api/pollinations?prompt=${encodeURIComponent(
             prompt
-        )}`;
+        )}&apikey=rapi_55197dde42fb4272bfb8f35bd453ba25`;
 
         const response = await axios.get(apiUrl, {
             responseType: "arraybuffer",

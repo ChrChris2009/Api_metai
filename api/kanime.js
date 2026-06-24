@@ -1,9 +1,9 @@
-// art.js
+// kanime.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "kanime",
+    desc: "Generate anime AI image using Kanime API",
     method: "get",
     category: "Image",
     operator: "Christus",
@@ -13,7 +13,7 @@ async function onStart({ req, res }) {
     try {
         const prompt = req.query.prompt || "A cat";
 
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
+        const apiUrl = `http://65.109.80.126:20511/api/kanime?prompt=${encodeURIComponent(
             prompt
         )}`;
 

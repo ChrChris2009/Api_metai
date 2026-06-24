@@ -1,9 +1,9 @@
-// art.js
+// neuralblender.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "neuralblender",
+    desc: "Generate AI image using NeuralBlender API",
     method: "get",
     category: "Image",
     operator: "Christus",
@@ -13,7 +13,7 @@ async function onStart({ req, res }) {
     try {
         const prompt = req.query.prompt || "A cat";
 
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
+        const apiUrl = `https://uniapis.onrender.com/api/neuralblender?prompt=${encodeURIComponent(
             prompt
         )}`;
 

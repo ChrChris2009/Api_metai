@@ -1,21 +1,17 @@
-// art.js
+// girls.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "girls",
+    desc: "Random NSFW girls image",
     method: "get",
-    category: "Image",
+    category: "nsfw",
     operator: "Christus",
 };
 
 async function onStart({ req, res }) {
     try {
-        const prompt = req.query.prompt || "A cat";
-
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
-            prompt
-        )}`;
+        const apiUrl = "https://delirius-apiofc.vercel.app/nsfw/girls";
 
         const response = await axios.get(apiUrl, {
             responseType: "arraybuffer",

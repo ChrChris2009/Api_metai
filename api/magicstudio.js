@@ -1,9 +1,9 @@
-// art.js
+// magicstudio.js
 const axios = require("axios");
 
 const meta = {
-    name: "art",
-    desc: "Generate AI art image",
+    name: "magicstudio",
+    desc: "Generate AI image using MagicStudio API",
     method: "get",
     category: "Image",
     operator: "Christus",
@@ -13,7 +13,7 @@ async function onStart({ req, res }) {
     try {
         const prompt = req.query.prompt || "A cat";
 
-        const apiUrl = `https://wildan-suldyir-apis.vercel.app/api/art?prompt=${encodeURIComponent(
+        const apiUrl = `http://65.109.80.126:20511/api/magicstudio?prompt=${encodeURIComponent(
             prompt
         )}`;
 
